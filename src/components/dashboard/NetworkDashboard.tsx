@@ -1,5 +1,6 @@
 import { useBlockTime } from '../../hooks/useBlockTime'
 import { useProposers } from '../../hooks/useProposers'
+import { useProposersOverTime } from '../../hooks/useProposersOverTime'
 import { useProtocolStatus } from '../../hooks/useProtocolStatus'
 import { useSupply } from '../../hooks/useSupply'
 import { StatPanel } from './StatPanel'
@@ -7,6 +8,9 @@ import { StakePanel } from './StakePanel'
 import { StakeGauge } from './StakeGauge'
 import { ProtocolPanel } from './ProtocolPanel'
 import { ProposerChart } from './ProposerChart'
+import { ProposersOverTimeChart } from './ProposersOverTimeChart'
+import { TheoreticalValuesTable } from './TheoreticalValuesTable'
+import { StakingCalculator } from './StakingCalculator'
 import type { BlockData } from '../../types/dashboard'
 
 interface NetworkDashboardProps {
@@ -17,6 +21,7 @@ interface NetworkDashboardProps {
 export function NetworkDashboard({ latestRound, blocks }: NetworkDashboardProps) {
   const blockTime = useBlockTime(blocks)
   const { proposers, uniqueCount } = useProposers(blocks)
+  const proposersOverTime = useProposersOverTime(blocks)
   const protocolStatus = useProtocolStatus()
   const supply = useSupply()
 
@@ -32,35 +37,20 @@ export function NetworkDashboard({ latestRound, blocks }: NetworkDashboardProps)
         <StakePanel supply={supply} />
       </div>
 
-      {/* Row 2: Protocol + Stake gauge */}
+      {/* Row 2: Protocol + Stake gauge + Calculator */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <ProtocolPanel status={protocolStatus} />
         <StakeGauge supply={supply} />
-        <div className="bg-base-200 rounded-box shadow p-4">
-          <h3 className="text-sm font-semibold mb-3 opacity-60">Network Info</h3>
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="opacity-50">Network</span>
-              <p className="font-semibold">Mainnet</p>
-            </div>
-            <div>
-              <span className="opacity-50">API</span>
-              <p className="font-mono text-xs">algonode.cloud</p>
-            </div>
-            <div>
-              <span className="opacity-50">Blocks Cached</span>
-              <p className="font-semibold">{blocks.size}</p>
-            </div>
-            <div className="pt-2">
-              <p className="text-xs opacity-40">
-                Node locations, ASN distribution, and version data require a node crawler and are not available via public API.
-              </p>
-            </div>
-          </div>
-        </div>
+        <StakingCalculator supply={supply} blockTime={blockTime} />
       </div>
 
-      {/* Row 3: Proposer distribution */}
+      {/* Row 3: Theoretical values + Proposers over time */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TheoreticalValuesTable supply={supply} blockTime={blockTime} />
+        <ProposersOverTimeChart data={proposersOverTime} />
+      </div>
+
+      {/* Row 4: Proposer distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ProposerChart data={proposers} />
         <div className="bg-base-200 rounded-box shadow p-4">

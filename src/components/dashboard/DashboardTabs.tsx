@@ -5,12 +5,16 @@ import { Dashboard } from './Dashboard'
 import { BlocksDashboard } from './BlocksDashboard'
 import { TransactionsDashboard } from './TransactionsDashboard'
 import { NetworkDashboard } from './NetworkDashboard'
+import { ExplorerDashboard } from './ExplorerDashboard'
+import { UnavailableDashboard } from './UnavailableDashboard'
 
 const tabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'blocks', label: 'Blocks' },
   { id: 'transactions', label: 'Transactions' },
-  { id: 'consensus', label: 'Consensus & Network' },
+  { id: 'consensus', label: 'Consensus' },
+  { id: 'explorer', label: 'Explorer' },
+  { id: 'unavailable', label: 'Unavailable' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
@@ -24,7 +28,7 @@ export function DashboardTabs() {
     <div className="min-h-screen bg-base-100 p-4 md:p-8">
       <h1 className="text-2xl font-bold mb-4">Algorand Mainnet Dashboard</h1>
 
-      <div role="tablist" className="tabs tabs-bordered mb-6">
+      <div role="tablist" className="tabs tabs-bordered mb-6 flex-wrap">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -41,6 +45,8 @@ export function DashboardTabs() {
       {activeTab === 'blocks' && <BlocksDashboard latestRound={latestRound} blocks={blocks} />}
       {activeTab === 'transactions' && <TransactionsDashboard blocks={blocks} />}
       {activeTab === 'consensus' && <NetworkDashboard latestRound={latestRound} blocks={blocks} />}
+      {activeTab === 'explorer' && <ExplorerDashboard blocks={blocks} />}
+      {activeTab === 'unavailable' && <UnavailableDashboard />}
     </div>
   )
 }

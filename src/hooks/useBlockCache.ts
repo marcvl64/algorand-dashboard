@@ -8,15 +8,51 @@ const BATCH_SIZE = 10
 
 const VALID_TX_TYPES = new Set<TxType>(['pay', 'axfer', 'appl', 'keyreg', 'acfg', 'afrz', 'stpf'])
 
-function parseTxTypes(payset: unknown[]): Partial<Record<TxType, number>> {
-  const counts: Partial<Record<TxType, number>> = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parsePayset(payset: any[]): Pick<BlockData, 'txnTypes' | 'uniqueSenders' | 'uniqueReceivers' | 'uniqueAppIds' | 'uniqueAssetIds' | 'appIdCounts'> {
+  const txnTypes: Partial<Record<TxType, number>> = {}
+  const senders = new Set<string>()
+  const receivers = new Set<string>()
+  const appIds = new Set<number>()
+  const assetIds = new Set<number>()
+  const appIdCounts: Record<number, number> = {}
+
   for (const entry of payset) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = (entry as any)?.signedTxn?.signedTxn?.txn?.type as string | undefined
+    const txn = entry?.signedTxn?.signedTxn?.txn
+    if (txn == null) continue
+
+    const raw = txn.type as string | undefined
     const type: TxType = raw && VALID_TX_TYPES.has(raw as TxType) ? (raw as TxType) : 'unknown'
-    counts[type] = (counts[type] ?? 0) + 1
+    txnTypes[type] = (txnTypes[type] ?? 0) + 1
+
+    if (txn.sender) senders.add(String(txn.sender))
+
+    if (txn.payment?.receiver) receivers.add(String(txn.payment.receiver))
+    if (txn.assetTransfer) {
+      if (txn.assetTransfer.receiver) receivers.add(String(txn.assetTransfer.receiver))
+      const aid = Number(txn.assetTransfer.assetIndex)
+      if (aid > 0) assetIds.add(aid)
+    }
+    if (txn.applicationCall) {
+      const aid = Number(txn.applicationCall.appIndex)
+      if (aid > 0) {
+        appIds.add(aid)
+        appIdCounts[aid] = (appIdCounts[aid] ?? 0) + 1
+      }
+    }
+    if (txn.assetConfig?.assetIndex) {
+      assetIds.add(Number(txn.assetConfig.assetIndex))
+    }
   }
-  return counts
+
+  return {
+    txnTypes,
+    uniqueSenders: senders.size,
+    uniqueReceivers: receivers.size,
+    uniqueAppIds: appIds.size,
+    uniqueAssetIds: assetIds.size,
+    appIdCounts,
+  }
 }
 
 export function useBlockCache(latestRound: number | null) {
@@ -33,12 +69,13 @@ export function useBlockCache(latestRound: number | null) {
       try {
         const block = await algod.block(round).do()
         const payset = block.block.payset ?? []
+        const parsed = parsePayset(payset)
         const data: BlockData = {
           round,
           timestamp: Number(block.block.header.timestamp),
           txnCount: payset.length,
           proposer: String(block.block.header.proposer ?? ''),
-          txnTypes: parseTxTypes(payset),
+          ...parsed,
         }
         cacheRef.current.set(round, data)
         return data
@@ -52,7 +89,6 @@ export function useBlockCache(latestRound: number | null) {
     [algod],
   )
 
-  // Bootstrap: fetch last BOOTSTRAP_COUNT blocks
   useEffect(() => {
     if (latestRound === null || bootstrappedRef.current) return
     bootstrappedRef.current = true
@@ -79,7 +115,6 @@ export function useBlockCache(latestRound: number | null) {
     bootstrap()
   }, [latestRound, fetchBlock])
 
-  // Fetch new blocks as latestRound advances
   useEffect(() => {
     if (latestRound === null || !bootstrappedRef.current) return
 

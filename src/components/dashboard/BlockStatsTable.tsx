@@ -40,6 +40,10 @@ export function BlockStatsTable({ stats }: BlockStatsTableProps) {
                 <td className="opacity-60">Max TX / Block</td>
                 <td className="font-semibold text-right">{stats.maxTxns}</td>
               </tr>
+              <tr>
+                <td className="opacity-60">95th Percentile</td>
+                <td className="font-semibold text-right">{stats.p95Txns}</td>
+              </tr>
             </tbody>
           </table>
         </div>

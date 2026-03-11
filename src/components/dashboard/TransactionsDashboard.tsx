@@ -2,11 +2,13 @@ import { useTps } from '../../hooks/useTps'
 import { useTpsHistory } from '../../hooks/useTpsHistory'
 import { useTxTypeBreakdown, useTxTypesOverTime } from '../../hooks/useTxTypes'
 import { useBlockStats } from '../../hooks/useBlockStats'
+import { useUniqueValues } from '../../hooks/useUniqueValues'
 import { TX_TYPE_LABELS, TX_TYPE_COLORS } from '../../types/dashboard'
 import { StatPanel } from './StatPanel'
 import { TpsChart } from './TpsChart'
 import { TxTypeChart } from './TxTypeChart'
 import { TxTypeStackedChart } from './TxTypeStackedChart'
+import { UniqueValuesChart } from './UniqueValuesChart'
 import type { BlockData } from '../../types/dashboard'
 
 interface TransactionsDashboardProps {
@@ -19,6 +21,7 @@ export function TransactionsDashboard({ blocks }: TransactionsDashboardProps) {
   const txTypeBreakdown = useTxTypeBreakdown(blocks)
   const txTypesOverTime = useTxTypesOverTime(blocks)
   const blockStats = useBlockStats(blocks)
+  const uniqueValues = useUniqueValues(blocks)
 
   const totalTx = txTypeBreakdown.reduce((s, e) => s + e.count, 0)
 
@@ -77,6 +80,9 @@ export function TransactionsDashboard({ blocks }: TransactionsDashboardProps) {
 
       {/* Row 4: Stacked area chart */}
       <TxTypeStackedChart data={txTypesOverTime} />
+
+      {/* Row 5: Unique values per block */}
+      <UniqueValuesChart data={uniqueValues} />
     </div>
   )
 }

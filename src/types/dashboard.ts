@@ -28,6 +28,11 @@ export interface BlockData {
   txnCount: number
   proposer: string
   txnTypes: Partial<Record<TxType, number>>
+  uniqueSenders: number
+  uniqueReceivers: number
+  uniqueAppIds: number
+  uniqueAssetIds: number
+  appIdCounts: Record<number, number>
 }
 
 export interface TpsDataPoint {
