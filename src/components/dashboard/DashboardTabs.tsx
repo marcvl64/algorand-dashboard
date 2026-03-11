@@ -28,17 +28,19 @@ export function DashboardTabs() {
     <div className="min-h-screen bg-base-100 p-4 md:p-8">
       <h1 className="text-2xl font-bold mb-4">Algorand Mainnet Dashboard</h1>
 
-      <div role="tablist" className="tabs tabs-bordered mb-6 flex-wrap">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            role="tab"
-            className={`tab tab-lg ${activeTab === tab.id ? 'tab-active font-semibold' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto mb-6 -mx-4 px-4 md:mx-0 md:px-0">
+        <div role="tablist" className="tabs tabs-bordered min-w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              className={`tab tab-sm sm:tab-lg whitespace-nowrap ${activeTab === tab.id ? 'tab-active font-semibold' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {activeTab === 'overview' && <Dashboard latestRound={latestRound} blocks={blocks} />}
