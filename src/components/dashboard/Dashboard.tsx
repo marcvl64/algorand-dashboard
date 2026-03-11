@@ -13,9 +13,12 @@ import { TpsGauge } from './TpsGauge'
 import { StakePanel } from './StakePanel'
 import { NavLinks } from './NavLinks'
 
-export function Dashboard() {
-  const latestRound = useLatestBlock()
-  const blocks = useBlockCache(latestRound)
+interface DashboardProps {
+  latestRound: number | null
+  blocks: Map<number, import('../../types/dashboard').BlockData>
+}
+
+export function Dashboard({ latestRound, blocks }: DashboardProps) {
   const tps = useTps(blocks)
   const blockTime = useBlockTime(blocks)
   const txCounts = useTxCounts(blocks)

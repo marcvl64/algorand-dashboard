@@ -1,16 +1,24 @@
 import { useState } from 'react'
+import { useLatestBlock } from '../../hooks/useLatestBlock'
+import { useBlockCache } from '../../hooks/useBlockCache'
 import { Dashboard } from './Dashboard'
+import { BlocksDashboard } from './BlocksDashboard'
+import { TransactionsDashboard } from './TransactionsDashboard'
 import { NetworkDashboard } from './NetworkDashboard'
 
 const tabs = [
-  { id: 'mainnet', label: 'Mainnet TPS' },
-  { id: 'network', label: 'Network Health' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'blocks', label: 'Blocks' },
+  { id: 'transactions', label: 'Transactions' },
+  { id: 'consensus', label: 'Consensus & Network' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
 
 export function DashboardTabs() {
-  const [activeTab, setActiveTab] = useState<TabId>('mainnet')
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const latestRound = useLatestBlock()
+  const blocks = useBlockCache(latestRound)
 
   return (
     <div className="min-h-screen bg-base-100 p-4 md:p-8">
@@ -29,8 +37,10 @@ export function DashboardTabs() {
         ))}
       </div>
 
-      {activeTab === 'mainnet' && <Dashboard />}
-      {activeTab === 'network' && <NetworkDashboard />}
+      {activeTab === 'overview' && <Dashboard latestRound={latestRound} blocks={blocks} />}
+      {activeTab === 'blocks' && <BlocksDashboard latestRound={latestRound} blocks={blocks} />}
+      {activeTab === 'transactions' && <TransactionsDashboard blocks={blocks} />}
+      {activeTab === 'consensus' && <NetworkDashboard latestRound={latestRound} blocks={blocks} />}
     </div>
   )
 }

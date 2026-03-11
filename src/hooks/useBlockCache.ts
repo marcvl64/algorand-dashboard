@@ -1,10 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAlgoClients } from '../clients/useAlgoClients'
-import type { BlockData } from '../types/dashboard'
+import type { BlockData, TxType } from '../types/dashboard'
 
 const MAX_CACHE_SIZE = 300
 const BOOTSTRAP_COUNT = 100
 const BATCH_SIZE = 10
+
+const VALID_TX_TYPES = new Set<TxType>(['pay', 'axfer', 'appl', 'keyreg', 'acfg', 'afrz', 'stpf'])
+
+function parseTxTypes(payset: unknown[]): Partial<Record<TxType, number>> {
+  const counts: Partial<Record<TxType, number>> = {}
+  for (const entry of payset) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = (entry as any)?.signedTxn?.signedTxn?.txn?.type as string | undefined
+    const type: TxType = raw && VALID_TX_TYPES.has(raw as TxType) ? (raw as TxType) : 'unknown'
+    counts[type] = (counts[type] ?? 0) + 1
+  }
+  return counts
+}
 
 export function useBlockCache(latestRound: number | null) {
   const { algod } = useAlgoClients()
@@ -19,10 +32,13 @@ export function useBlockCache(latestRound: number | null) {
       fetchingRef.current.add(round)
       try {
         const block = await algod.block(round).do()
+        const payset = block.block.payset ?? []
         const data: BlockData = {
           round,
           timestamp: Number(block.block.header.timestamp),
-          txnCount: block.block.payset?.length ?? 0,
+          txnCount: payset.length,
+          proposer: String(block.block.header.proposer ?? ''),
+          txnTypes: parseTxTypes(payset),
         }
         cacheRef.current.set(round, data)
         return data
@@ -56,7 +72,6 @@ export function useBlockCache(latestRound: number | null) {
         const end = Math.min(i + BATCH_SIZE - 1, latestRound)
         await fetchBatch(i, end)
       }
-      // Evict old entries
       evictOld()
       setBlocks(new Map(cacheRef.current))
     }
@@ -69,7 +84,6 @@ export function useBlockCache(latestRound: number | null) {
     if (latestRound === null || !bootstrappedRef.current) return
 
     const fetchNew = async () => {
-      // Find highest cached round
       const cachedRounds = Array.from(cacheRef.current.keys())
       if (cachedRounds.length === 0) return
       const maxCached = Math.max(...cachedRounds)
