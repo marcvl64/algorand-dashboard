@@ -1,10 +1,10 @@
 import { AlgoClientProvider } from './clients/AlgoClientProvider'
-import { Dashboard } from './components/dashboard/Dashboard'
+import { DashboardTabs } from './components/dashboard/DashboardTabs'
 
 export default function App() {
   return (
     <AlgoClientProvider>
-      <Dashboard />
+      <DashboardTabs />
     </AlgoClientProvider>
   )
 }

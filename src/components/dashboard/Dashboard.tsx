@@ -24,11 +24,9 @@ export function Dashboard() {
   const supply = useSupply()
 
   return (
-    <div className="min-h-screen bg-base-100 p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-6">Algorand Mainnet Dashboard</h1>
-
+    <div className="space-y-4">
       {/* Row 1: Stat panels */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatPanel title="TPS (100-block avg)" value={tps !== null ? tps.toFixed(2) : null} color="primary" />
         <StatPanel
           title="Block Time (100-block avg)"
@@ -45,7 +43,7 @@ export function Dashboard() {
       </div>
 
       {/* Row 2: TPS chart + gauge */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-3">
           <TpsChart data={tpsHistory} />
         </div>
